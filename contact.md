@@ -10,7 +10,7 @@ I'd love to hear from you! Whether you have a question, want to collaborate, or 
 
 - **Email**: [harry.zhao19@gmail.com](mailto:harry.zhao19@gmail.com)
 - **GitHub**: [Harry-Zhao-AU](https://github.com/Harry-Zhao-AU)
-- **LinkedIn**: [Add your LinkedIn here]
+- **LinkedIn**: [harryzhao19](https://www.linkedin.com/in/harryzhao19)
 
 ## Let's Connect
 
