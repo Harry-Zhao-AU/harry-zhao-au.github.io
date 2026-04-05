@@ -1,0 +1,208 @@
+// Header
+.site-header {
+  padding: 1rem 0;
+  border-bottom: 1px solid $color-border;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: $wide-width;
+}
+
+.site-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-text;
+
+  &:hover {
+    color: $color-accent;
+  }
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.5rem;
+
+  a {
+    color: $color-text-light;
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    &:hover,
+    &.active {
+      color: $color-accent;
+    }
+  }
+}
+
+.nav-toggle {
+  display: none;
+}
+
+.nav-toggle-label {
+  display: none;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 5px;
+
+  span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: $color-text;
+    transition: transform 0.3s;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-toggle-label {
+    display: flex;
+  }
+
+  .site-nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 1.5rem;
+    background: $color-bg;
+    border: 1px solid $color-border;
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    gap: 0.75rem;
+    z-index: 10;
+  }
+
+  .nav-toggle:checked ~ .site-nav {
+    display: flex;
+  }
+}
+
+// Footer
+.site-footer {
+  padding: 2rem 0;
+  border-top: 1px solid $color-border;
+  margin-top: $spacing;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: $wide-width;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+
+  p {
+    margin: 0;
+    color: $color-text-light;
+    font-size: 0.875rem;
+  }
+}
+
+.social-links {
+  display: flex;
+  gap: 1.25rem;
+
+  a {
+    color: $color-text-light;
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    &:hover {
+      color: $color-accent;
+    }
+  }
+}
+
+// Buttons
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background-color: $color-accent;
+  color: #fff;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: $color-accent-hover;
+    color: #fff;
+  }
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: $color-accent;
+  border: 1px solid $color-accent;
+
+  &:hover {
+    background-color: $color-accent;
+    color: #fff;
+  }
+}
+
+// Tags
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.8rem;
+  background-color: $color-code-bg;
+  border: 1px solid $color-border;
+  border-radius: 4px;
+  color: $color-text-light;
+}
+
+// Project card
+.project-card {
+  border: 1px solid $color-border;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: $color-accent;
+  }
+
+  h3 {
+    margin-bottom: 0.5rem;
+    color: $color-text;
+  }
+
+  p {
+    color: $color-text-light;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.project-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.tech-badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  background-color: $color-code-bg;
+  border: 1px solid $color-border;
+  border-radius: 3px;
+  color: $color-text-light;
+}
+
+.project-links {
+  display: flex;
+  gap: 1rem;
+
+  a {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+}

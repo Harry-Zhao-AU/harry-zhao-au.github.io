@@ -1,0 +1,17 @@
+<div class="project-card">
+  <h3>{{ include.project.name }}</h3>
+  <p>{{ include.project.description }}</p>
+  <div class="project-tech">
+    {% for tech in include.project.technologies %}
+      <span class="tech-badge">{{ tech }}</span>
+    {% endfor %}
+  </div>
+  <div class="project-links">
+    {% if include.project.github %}
+      <a href="{{ include.project.github }}" target="_blank" rel="noopener">GitHub →</a>
+    {% endif %}
+    {% if include.project.live != "" %}
+      <a href="{{ include.project.live }}" target="_blank" rel="noopener">Live Demo →</a>
+    {% endif %}
+  </div>
+</div>

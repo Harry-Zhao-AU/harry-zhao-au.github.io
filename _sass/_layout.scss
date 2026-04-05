@@ -1,0 +1,140 @@
+.container {
+  max-width: $content-width;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.site-content {
+  min-height: calc(100vh - 160px);
+  padding: $spacing 0;
+}
+
+// Hero
+.hero {
+  padding: 4rem 0 3rem;
+  border-bottom: 1px solid $color-border;
+  margin-bottom: $spacing;
+
+  .tagline {
+    font-size: 1.25rem;
+    color: $color-text-light;
+    margin-bottom: 1rem;
+  }
+
+  .hero-intro {
+    font-size: 1.05rem;
+    color: $color-text-light;
+    max-width: 540px;
+    margin-bottom: 1.5rem;
+  }
+
+  .accent {
+    color: $color-accent;
+  }
+
+  .hero-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+// Post list
+.posts {
+  padding: $spacing 0;
+}
+
+.post-list {
+  list-style: none;
+  padding: 0;
+}
+
+.post-item {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  time {
+    font-size: 0.875rem;
+    color: $color-text-light;
+  }
+
+  h3 {
+    margin: 0.25rem 0 0.5rem;
+  }
+
+  p {
+    color: $color-text-light;
+    margin-bottom: 0;
+  }
+}
+
+// Page
+.page {
+  padding: $spacing 0;
+}
+
+// Post
+.post {
+  padding: $spacing 0;
+
+  .post-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid $color-border;
+  }
+
+  .post-meta {
+    color: $color-text-light;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+
+  .post-tags {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .post-content {
+    margin-bottom: 3rem;
+  }
+}
+
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1.5rem;
+  border-top: 1px solid $color-border;
+
+  .next {
+    margin-left: auto;
+  }
+}
+
+// Portfolio grid
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  max-width: $wide-width;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.4rem; }
+
+  .hero {
+    padding: 2.5rem 0 2rem;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+}
