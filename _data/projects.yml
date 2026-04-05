@@ -3,9 +3,3 @@
   technologies: ["TypeScript", "Node.js"]
   github: "https://github.com/Harry-Zhao-AU/NanoBotTS"
   live: ""
-
-- name: "Project Two"
-  description: "Brief description of what this project does and the problem it solves."
-  technologies: ["Python", "Flask"]
-  github: "https://github.com/Harry-Zhao-AU/project-two"
-  live: ""
