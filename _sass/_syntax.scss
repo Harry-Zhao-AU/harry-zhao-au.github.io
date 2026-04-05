@@ -1,32 +1,45 @@
-// Rouge syntax highlighting (GitHub-like light theme)
+// Rouge syntax highlighting - minimal
 .highlight {
-  background: $color-code-bg;
-  border: 1px solid $color-border;
-  border-radius: 6px;
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1em;
   overflow-x: auto;
 
   pre {
     margin: 0;
     padding: 0;
-    border: none;
     background: none;
   }
 
-  .c, .cm, .c1, .cs { color: #6a737d; font-style: italic; } // comments
-  .k, .kc, .kd, .kn, .kp, .kr, .kt { color: #d73a49; } // keywords
-  .s, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .s1 { color: #032f62; } // strings
-  .na { color: #005cc5; } // attribute names
-  .nb { color: #005cc5; } // builtins
-  .nc { color: #6f42c1; } // class names
-  .nf, .fm { color: #6f42c1; } // function names
-  .no { color: #005cc5; } // constants
-  .mi, .mf, .mh, .mo { color: #005cc5; } // numbers
-  .o, .ow { color: #d73a49; } // operators
-  .p { color: $color-text; } // punctuation
-  .nn { color: #005cc5; } // namespace
-  .ni { color: #24292e; }
-  .ne { color: #005cc5; }
-  .err { color: #d73a49; }
+  .c, .cm, .c1, .cs { color: #6a737d; font-style: italic; }
+  .k, .kc, .kd, .kn, .kp, .kr, .kt { color: #d73a49; }
+  .s, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .s1 { color: #032f62; }
+  .na { color: #005cc5; }
+  .nb { color: #005cc5; }
+  .nc { color: #6f42c1; }
+  .nf, .fm { color: #6f42c1; }
+  .no { color: #005cc5; }
+  .mi, .mf, .mh, .mo { color: #005cc5; }
+  .o, .ow { color: #d73a49; }
+  .p { color: inherit; }
+  .nn { color: #005cc5; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .highlight {
+    background: rgba(255, 255, 255, 0.08);
+
+    .c, .cm, .c1, .cs { color: #8b949e; }
+    .k, .kc, .kd, .kn, .kp, .kr, .kt { color: #ff7b72; }
+    .s, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .s1 { color: #a5d6ff; }
+    .na { color: #79c0ff; }
+    .nb { color: #79c0ff; }
+    .nc { color: #d2a8ff; }
+    .nf, .fm { color: #d2a8ff; }
+    .no { color: #79c0ff; }
+    .mi, .mf, .mh, .mo { color: #79c0ff; }
+    .o, .ow { color: #ff7b72; }
+    .nn { color: #79c0ff; }
+  }
 }

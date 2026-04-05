@@ -2,9 +2,13 @@
 <html lang="en">
   {% include head.html %}
   <body>
-    {% include header.html %}
+    {% unless page.layout == "home" %}
+      {% include header.html %}
+    {% endunless %}
     <main class="site-content">
-      {{ content }}
+      <div class="container">
+        {{ content }}
+      </div>
     </main>
     {% include footer.html %}
   </body>

@@ -1,19 +1,14 @@
 // Colors
 $color-bg: #ffffff;
-$color-text: #2d2d2d;
-$color-text-light: #6b7280;
-$color-accent: #2563eb;
-$color-accent-hover: #1d4ed8;
-$color-border: #e5e7eb;
-$color-code-bg: #f9fafb;
+$color-bg-dark: #262626;
+$color-text: #222;
+$color-text-dark: #e0e0e0;
+$color-text-light: #555;
 
 // Typography
-$font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-$font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
-$font-size-base: 1.125rem;
-$line-height: 1.75;
+$font-body: system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, "Open Sans", Arial, sans-serif;
+$font-mono: "SF Mono", "Cascadia Code", Consolas, monospace;
+$line-height: 1.8;
 
-// Spacing
-$content-width: 720px;
-$wide-width: 960px;
-$spacing: 2rem;
+// Layout
+$content-width: 700px;

@@ -2,33 +2,48 @@
 layout: default
 ---
 
-<section class="hero">
-  <div class="container">
-    <h1>Hi, I'm <span class="accent">Harry Zhao</span></h1>
-    <p class="tagline">Software Developer crafting clean, efficient solutions.</p>
-    <p class="hero-intro">Welcome to my corner of the internet where I share my thoughts on software development, technology, and the things I'm building.</p>
-    <div class="hero-links">
-      <a href="/portfolio/" class="btn">View My Work</a>
-      <a href="/about/" class="btn btn-outline">About Me</a>
-    </div>
-  </div>
-</section>
-
-<section class="posts" id="blog">
-  <div class="container">
-    <h2>Recent Posts</h2>
-    {% if site.posts.size > 0 %}
-      <ul class="post-list">
-        {% for post in site.posts %}
-          <li class="post-item">
-            <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%b %d, %Y" }}</time>
-            <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
-            <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No posts yet — stay tuned!</p>
+<div class="profile">
+  <h1>Harry Zhao</h1>
+  <p class="subtitle">Software Developer</p>
+  <div class="social-links">
+    {% if site.author.github %}
+      <a href="https://github.com/{{ site.author.github }}" target="_blank" rel="noopener" title="GitHub">GitHub</a>
+    {% endif %}
+    {% if site.author.linkedin != "" %}
+      <a href="https://linkedin.com/in/{{ site.author.linkedin }}" target="_blank" rel="noopener" title="LinkedIn">LinkedIn</a>
+    {% endif %}
+    {% if site.author.email %}
+      <a href="mailto:{{ site.author.email }}" title="Email">Email</a>
     {% endif %}
   </div>
-</section>
+</div>
+
+<div class="section">
+  <p>Welcome to my corner of the internet. I write about software development, share projects I'm working on, and document things I learn along the way.</p>
+  <p>Check out my <a href="/blog/">Blog</a>, browse my <a href="/portfolio/">Projects</a>, or learn more <a href="/about/">about me</a>.</p>
+</div>
+
+<div class="section">
+  <h2>Projects</h2>
+  <ul class="project-list">
+    {% for project in site.data.projects %}
+      <li>
+        <a href="{{ project.github }}" target="_blank" rel="noopener">{{ project.name }}</a> — {{ project.description }}
+        <span class="project-tech">({{ project.technologies | join: ", " }})</span>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="section">
+  <h2>Latest Posts</h2>
+  {% if site.posts.size > 0 %}
+    <ul class="post-list">
+      {% for post in site.posts %}
+        <li><a href="{{ post.url | relative_url }}">{{ post.title }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No posts yet — stay tuned!</p>
+  {% endif %}
+</div>

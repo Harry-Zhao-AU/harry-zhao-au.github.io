@@ -1,38 +1,33 @@
 // Header
 .site-header {
   padding: 1rem 0;
-  border-bottom: 1px solid $color-border;
-}
 
-.header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: $wide-width;
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 
 .site-title {
-  font-size: 1.25rem;
   font-weight: 700;
-  color: $color-text;
-
-  &:hover {
-    color: $color-accent;
-  }
+  font-size: 1rem;
+  border-bottom: none;
 }
 
 .site-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.5em;
 
   a {
-    color: $color-text-light;
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 0.9em;
+    border-bottom: none;
+    opacity: 0.7;
+    transition: opacity 80ms;
 
     &:hover,
     &.active {
-      color: $color-accent;
+      opacity: 1;
     }
   }
 }
@@ -49,14 +44,13 @@
 
   span {
     display: block;
-    width: 24px;
+    width: 22px;
     height: 2px;
-    background-color: $color-text;
-    transition: transform 0.3s;
+    background-color: currentColor;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 500px) {
   .nav-toggle-label {
     display: flex;
   }
@@ -65,14 +59,19 @@
     display: none;
     flex-direction: column;
     position: absolute;
-    top: 60px;
+    top: 50px;
     right: 1.5rem;
     background: $color-bg;
-    border: 1px solid $color-border;
-    border-radius: 6px;
     padding: 1rem 1.5rem;
     gap: 0.75rem;
     z-index: 10;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    @media (prefers-color-scheme: dark) {
+      background: $color-bg-dark;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
   }
 
   .nav-toggle:checked ~ .site-nav {
@@ -82,127 +81,34 @@
 
 // Footer
 .site-footer {
-  padding: 2rem 0;
-  border-top: 1px solid $color-border;
-  margin-top: $spacing;
-}
+  padding: 1rem 0;
+  text-align: center;
+  font-size: 0.85em;
+  color: $color-text-light;
 
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  max-width: $wide-width;
-  margin: 0 auto;
-  padding: 0 1.5rem;
+  @media (prefers-color-scheme: dark) {
+    color: #aaa;
+  }
 
-  p {
-    margin: 0;
-    color: $color-text-light;
-    font-size: 0.875rem;
+  a {
+    color: inherit;
   }
 }
 
-.social-links {
-  display: flex;
-  gap: 1.25rem;
+// Tags (minimal)
+.post-tags {
+  margin-top: 0.5em;
 
-  a {
+  .tag {
+    font-size: 0.8em;
     color: $color-text-light;
-    font-size: 0.875rem;
-    font-weight: 500;
 
-    &:hover {
-      color: $color-accent;
+    @media (prefers-color-scheme: dark) {
+      color: #aaa;
     }
-  }
-}
 
-// Buttons
-.btn {
-  display: inline-block;
-  padding: 0.6rem 1.5rem;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  background-color: $color-accent;
-  color: #fff;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: $color-accent-hover;
-    color: #fff;
-  }
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: $color-accent;
-  border: 1px solid $color-accent;
-
-  &:hover {
-    background-color: $color-accent;
-    color: #fff;
-  }
-}
-
-// Tags
-.tag {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.8rem;
-  background-color: $color-code-bg;
-  border: 1px solid $color-border;
-  border-radius: 4px;
-  color: $color-text-light;
-}
-
-// Project card
-.project-card {
-  border: 1px solid $color-border;
-  border-radius: 8px;
-  padding: 1.5rem;
-  transition: border-color 0.2s;
-
-  &:hover {
-    border-color: $color-accent;
-  }
-
-  h3 {
-    margin-bottom: 0.5rem;
-    color: $color-text;
-  }
-
-  p {
-    color: $color-text-light;
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
-  }
-}
-
-.project-tech {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
-}
-
-.tech-badge {
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
-  background-color: $color-code-bg;
-  border: 1px solid $color-border;
-  border-radius: 3px;
-  color: $color-text-light;
-}
-
-.project-links {
-  display: flex;
-  gap: 1rem;
-
-  a {
-    font-size: 0.875rem;
-    font-weight: 500;
+    &::before {
+      content: "#";
+    }
   }
 }
