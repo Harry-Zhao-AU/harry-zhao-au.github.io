@@ -28,6 +28,12 @@
 
   .subtitle {
     color: $color-text-light;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle-detail {
+    color: $color-text-light;
+    font-size: 0.9em;
     margin-bottom: 1rem;
   }
 
@@ -37,7 +43,8 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    .subtitle {
+    .subtitle,
+    .subtitle-detail {
       color: #aaa;
     }
     .contact-info {
