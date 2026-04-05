@@ -1,5 +1,5 @@
 - name: "NanoBotTS"
-  description: "A TypeScript-based project showcasing modern development practices."
+  description: "Lightweight AI Agent Framework — full agent loop with LLM reasoning, tool use, and parallel execution. Features a decoupled MessageBus (CLI/Telegram), two-tier memory system, token-aware context management, and ProviderRegistry supporting Azure OpenAI, OpenAI, Groq, and Ollama."
   technologies: ["TypeScript", "Node.js"]
   github: "https://github.com/Harry-Zhao-AU/NanoBotTS"
   live: ""
