@@ -3,3 +3,9 @@
   technologies: ["TypeScript", "Node.js"]
   github: "https://github.com/Harry-Zhao-AU/NanoBotTS"
   live: ""
+
+- name: "ResumeGraph"
+  description: "HR Skill Graph tool — generates fake resumes, extracts employee-skill relationships into Neo4j using GraphRAG, and exposes queries via FastAPI and MCP server. Integrates with NanoBotTS as an HTTP tool."
+  technologies: ["Python", "Neo4j", "LlamaIndex", "FastAPI", "MCP"]
+  github: "https://github.com/Harry-Zhao-AU/ResumeGraph"
+  live: ""
