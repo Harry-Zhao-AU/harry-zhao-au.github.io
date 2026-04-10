@@ -1,6 +1,6 @@
 - name: "BankForge"
   description: "Australian core banking platform demonstrating enterprise microservices patterns — 4 Java/Spring Boot services with local ACID transactions, Saga/Outbox/CDC messaging, full observability (Jaeger + Prometheus + Loki + Grafana), Istio service mesh on Kubernetes, and a Claude MCP server for AI-driven root cause analysis."
-  technologies: ["Java", "Spring Boot", "Kafka", "PostgreSQL", "Kubernetes", "Istio", "Neo4j", "MCP"]
+  technologies: ["Java", "Spring Boot", "Kafka", "PostgreSQL", "Kubernetes", "Istio", "Kong", "Neo4j", "Redis", "OpenTelemetry", "Outbox-CDC", "Saga", "MCP"]
   github: "https://github.com/Harry-Zhao-AU/BankForge"
   live: ""
 
