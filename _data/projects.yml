@@ -1,3 +1,9 @@
+- name: "BankForge"
+  description: "Australian core banking platform demonstrating enterprise microservices patterns — 4 Java/Spring Boot services with local ACID transactions, Saga/Outbox/CDC messaging, full observability (Jaeger + Prometheus + Loki + Grafana), Istio service mesh on Kubernetes, and a Claude MCP server for AI-driven root cause analysis."
+  technologies: ["Java", "Spring Boot", "Kafka", "PostgreSQL", "Kubernetes", "Istio", "Neo4j", "MCP"]
+  github: "https://github.com/Harry-Zhao-AU/BankForge"
+  live: ""
+
 - name: "NanoBotTS"
   description: "Lightweight AI Agent Framework — full agent loop with LLM reasoning, tool use, and parallel execution. Features a decoupled MessageBus (CLI/Telegram), two-tier memory system, token-aware context management, and ProviderRegistry supporting Azure OpenAI, OpenAI, Groq, and Ollama."
   technologies: ["TypeScript", "Node.js"]
