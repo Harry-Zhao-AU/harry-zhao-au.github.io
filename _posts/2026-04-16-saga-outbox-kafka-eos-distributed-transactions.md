@@ -1,19 +1,17 @@
 ---
 layout: post
-title: "Saga, Outbox, and Kafka EOS: Three Patterns for Distributed Transactions (and When to Use Each)"
+title: "Saga, Outbox, and CDC: Three Patterns for Distributed Transactions (and Why We Dropped Kafka EOS)"
 date: 2026-04-16
 categories: [engineering]
 tags: [java, spring-boot, kafka, microservices, distributed-systems, bankforge]
-excerpt: "Three patterns that look like they solve the same problem but actually solve different layers of it. Understanding the difference took me building BankForge end-to-end."
+excerpt: "We started with Kafka EOS for the ledger pipeline step. We dropped it. The reason reveals something non-obvious about when CDC is the right tool — even for a consumer, not just an event origin."
 ---
 
 Distributed transactions are one of those problems where the naive solution is obvious and wrong, the correct solution is non-obvious, and the real difficulty is understanding which correct solution applies to which layer of your system.
 
 When I built BankForge — a core banking platform with four microservices, Kafka event streaming, and a Debezium CDC pipeline — I ended up using three different patterns to solve what initially looked like the same problem: *how do you guarantee consistency when a single business operation spans multiple services and databases?*
 
-The three patterns are the **Saga**, the **Transactional Outbox with CDC**, and **Kafka EOS with DB transactions**. They are not alternatives. They solve different layers of the same problem. Using the wrong one for the wrong layer is a common mistake.
-
-Here is how they differ, where each one applies, and how they fit together in a real system.
+The three patterns are the **Saga**, the **Transactional Outbox with CDC**, and **Kafka EOS with DB transactions**. I originally used all three. By the end of the build I had dropped Kafka EOS entirely and extended the Outbox + CDC pattern to cover what EOS was supposed to handle. This post explains why — and what the decision reveals about when each pattern actually applies.
 
 ---
 
@@ -30,7 +28,7 @@ In a microservices system, you have no such luxury. A single business operation 
 
 None of these share a transaction boundary. And there is no distributed 2PC that works reliably at scale.
 
-So how do you get consistency without 2PC? You use a combination of the three patterns described below — each one operating at a different layer.
+So how do you get consistency without 2PC? You use a combination of patterns — each one operating at a different layer.
 
 ---
 
@@ -52,9 +50,10 @@ sequenceDiagram
     participant C as Client
     participant PS as payment-service
     participant AS as account-service
-    participant DZ as Debezium (CDC)
+    participant DZ1 as Debezium (account-service CDC)
     participant K as Kafka
     participant LS as ledger-service
+    participant DZ2 as Debezium (ledger-service CDC)
     participant NS as notification-service
 
     C->>PS: POST /transfer (Idempotency-Key)
@@ -76,8 +75,8 @@ sequenceDiagram
 
     rect rgb(220, 230, 255)
         Note over AS,K: Outbox + CDC — Debezium reads PostgreSQL WAL
-        AS-->>DZ: WAL change (outbox_event row)
-        DZ->>K: publish → banking.transfer.events
+        AS-->>DZ1: WAL change (outbox_event row)
+        DZ1->>K: publish → banking.transfer.events
     end
 
     par Kafka fan-out to consumers
@@ -89,11 +88,11 @@ sequenceDiagram
     NS->>NS: log notification
 
     rect rgb(255, 245, 215)
-        Note over LS,K: Kafka EOS + DB TX — consume → process → produce
+        Note over LS,K: Outbox + CDC — same pattern as account-service
         LS->>LS: idempotency check (existsByTransferId)
-        LS->>LS: @Transactional save(DEBIT + CREDIT)
-        LS->>K: buffer banking.transfer.confirmed in Kafka TX
-        Note over LS,K: Kafka TX commits atomically — offset advance + message
+        LS->>LS: @Transactional: save(DEBIT + CREDIT + ledger_outbox_event)
+        LS-->>DZ2: WAL change (ledger_outbox_event row)
+        DZ2->>K: publish → banking.transfer.confirmed
     end
 
     K->>PS: consume banking.transfer.confirmed
@@ -167,21 +166,13 @@ banking.transfer.events  ──▶  ledger-service
 
 The Kafka publish is no longer the application's responsibility. Debezium guarantees at-least-once delivery from the WAL to Kafka, with checkpointing so it recovers correctly after a restart.
 
-### When to use it
-
-Use the Outbox + CDC pattern at the **origin of an event** — where a service is the authoritative source of truth for a domain event and must guarantee that event enters the pipeline.
-
-In BankForge, `account-service` is the right place. It owns account balances. The transfer event is a fact that must not be lost. CDC is the bridge that reliably carries it to Kafka without requiring the application to manage that bridge itself.
-
-The setup cost is real: you need a Debezium connector, a `wal_level=logical` PostgreSQL config, and an outbox table. For a service that is not the origin of critical events, the cost may not be justified.
-
 ---
 
-## Pattern 3: Kafka EOS with DB Transaction
+## Pattern 3: Why We Started with Kafka EOS and Dropped It
 
-### The problem it solves
+### The original problem
 
-Now consider `ledger-service`. Its job is different: it *consumes* an event from Kafka, *processes* it (writes ledger entries), and *produces* a downstream event (`banking.transfer.confirmed`).
+Consider `ledger-service`. Its job is to consume an event from Kafka, process it (write ledger entries), and produce a downstream event (`banking.transfer.confirmed`).
 
 The original implementation had this gap:
 
@@ -199,28 +190,9 @@ public void onTransferEvent(String payload) {
 
 If the JVM crashes after the DB commit but before `kafkaTemplate.send()`, the ledger entries exist but `banking.transfer.confirmed` is never published. `payment-service` is stuck in `POSTING` state forever.
 
-You might ask: why not use Outbox + CDC here too? The answer is that CDC is the **wrong shape** for this problem — and understanding why is the most important distinction in this post.
+### Why we chose Kafka EOS initially
 
-**CDC solves event origination.** It answers the question: *how does a new fact get reliably introduced into the event pipeline for the first time?* `account-service` is introducing a new fact — a transfer happened, balances moved. CDC carries that fact from the database out to Kafka. That is CDC's job.
-
-**`ledger-service` is not introducing a fact. It is processing one.** The transfer event already exists in Kafka. `ledger-service`'s job is to consume it, do local work, and emit a downstream signal. The fact was originated upstream. `ledger-service` is a pipeline processor, not an event origin.
-
-This distinction matters because the atomicity unit you need is completely different:
-
-| Role | Atomicity unit needed | Pattern |
-|---|---|---|
-| Event origin (account-service) | DB write + event enters Kafka | Outbox + CDC |
-| Pipeline processor (ledger-service) | Consumer offset advance + downstream event | Kafka EOS |
-
-CDC has no concept of a **consumer offset**. It reads the WAL and publishes to Kafka — it knows nothing about whether a downstream consumer has processed a message or where it is in the topic. It cannot help you answer: *"I consumed this message — how do I guarantee my downstream publish is atomic with acknowledging that consumption?"*
-
-Kafka EOS was designed for exactly that question. The atomicity unit it provides — offset advance and produced message commit together or not at all — maps directly to the consume→process→produce shape that `ledger-service` has. That is not a coincidence. That is precisely the problem Kafka EOS exists to solve.
-
-Adding Outbox + CDC to `ledger-service` would mean: a second Debezium connector, a second outbox table, a second WAL reader — all to solve a problem that is not CDC's problem to solve. You would be using the wrong tool and paying the wrong cost.
-
-### How Kafka EOS works
-
-With a `KafkaTransactionManager` wired to the listener container, the consumer offset advance and the producer send become a single atomic Kafka transaction:
+Kafka EOS (Exactly-Once Semantics) seemed like the right shape for this problem. With a `KafkaTransactionManager` wired to the listener container, the consumer offset advance and the producer send become a single atomic Kafka transaction:
 
 ```
 Container begins Kafka TX
@@ -235,46 +207,79 @@ Container begins Kafka TX
       produced message visible to readers
 ```
 
-If the JVM crashes before the Kafka TX commits, the offset is not advanced. The message is redelivered. On retry, the DB saves are re-attempted.
+If the JVM crashes before the Kafka TX commits, the offset is not advanced. The message is redelivered. On retry, the DB saves are re-attempted — which is why idempotency is also required.
 
-### The missing piece: idempotency
+This is genuinely the right mental model for the consume → process → produce shape. The conceptual fit is clean.
 
-Kafka EOS alone is not enough. On retry, the DB saves run again. Without a uniqueness constraint, you get duplicate ledger entries.
+### Why we dropped it
 
-The fix is two parts:
+Two problems emerged in practice.
 
-1. A database constraint: `UNIQUE (transfer_id, entry_type)` on `ledger_entries`
-2. An application-level guard that skips inserts if entries already exist, but still publishes the confirmation
+**Problem 1: EOS conflicts with Dead Letter Topics.**
+
+A Dead Letter Topic (DLT) is essential for any financial event consumer. When a message exhausts its retries — invalid payload, unresolvable error — it must not be silently dropped. Spring Kafka's `DeadLetterPublishingRecoverer` routes exhausted messages to a `.DLT` topic. But it requires a **non-transactional** `KafkaTemplate` to do so.
+
+`KafkaTransactionManager` (the EOS dependency) makes the application's `KafkaTemplate` transactional. You cannot have both. Either you give up EOS or you give up the DLT. For a banking system, giving up the DLT is not an option — silent event loss is worse than duplicate processing.
+
+**Problem 2: Operational complexity for a problem already solved.**
+
+EOS requires: `KafkaTransactionManager`, `EOSMode.V2`, a transactional producer factory, and careful coordination between the Kafka TX and the JPA TX. It also constrains the consumer container configuration in ways that interact badly with retry backoff settings.
+
+Meanwhile, the codebase already had a proven solution for the produce-reliably problem: the Outbox + CDC pattern used in `account-service`. The question became: why not use the same pattern in `ledger-service` instead?
+
+### What we did instead
+
+`ledger-service` was refactored to use the same Outbox + CDC pattern as `account-service`:
 
 ```java
 @Transactional
 @KafkaListener(topics = "banking.transfer.events")
 public void onTransferEvent(String payload) {
-    // Idempotency guard — safe to retry
+    // Idempotency guard — safe at-least-once redelivery
     if (ledgerEntryRepository.existsByTransferId(transferId)) {
-        kafkaTemplate.send("banking.transfer.confirmed", ...);  // re-publish in case it was lost
-        return;
+        return;  // already processed — outbox row already written, Debezium already published
     }
 
     ledgerEntryRepository.save(debit);
     ledgerEntryRepository.save(credit);
-    kafkaTemplate.send("banking.transfer.confirmed", ...);
+
+    // Write outbox row in the same JPA transaction — no direct Kafka call
+    ledgerOutboxEventRepository.save(LedgerOutboxEvent.builder()
+        .aggregateid(transferId.toString())
+        .aggregatetype("transfer-confirmation")
+        .type("TransferConfirmed")
+        .payload(serialize(confirmation))
+        .build());
+
+    // Debezium reads the outbox row from the WAL and publishes banking.transfer.confirmed
 }
 ```
 
-Now the full failure matrix is safe:
+A second Debezium connector was added pointing at `ledger-db`, watching the `ledger_outbox_event` table, publishing to `banking.transfer.confirmed`.
 
-| Crash point | DB state | Kafka state | Recovery |
+The failure matrix with this approach:
+
+| Crash point | DB state | Outbox state | Recovery |
 |---|---|---|---|
-| During saves | rolled back | Kafka TX rolled back | Offset not advanced → clean retry |
-| After DB commit, before Kafka TX commit | committed | Kafka TX rolled back | Offset not advanced → retry → idempotency guard → re-publishes confirmation |
-| After Kafka TX commit | committed | committed | Done — exactly once |
+| During saves | rolled back | rolled back | Offset not advanced → clean retry |
+| After DB+outbox commit | committed | committed | Debezium publishes confirmation — done |
+| Debezium lag | committed | committed | Debezium recovers from WAL — publishes eventually |
 
-### When to use it
+The idempotency guard handles the retry window: if the message is redelivered after the DB commit but before the consumer offset advances, `existsByTransferId` returns true and the handler exits without duplicate writes.
 
-Use Kafka EOS + DB transactions at **intermediate pipeline steps** — where a service consumes from Kafka, does local work, and produces back to Kafka. The goal is to make the consume → process → produce unit atomic from Kafka's perspective, combined with idempotent DB writes for the retry window.
+### What this reveals about the CDC vs EOS distinction
 
-In BankForge, `ledger-service` is the right place. It sits in the middle of the pipeline. The Outbox + CDC pattern would require a second Debezium connector and a second outbox table — more operational overhead for a problem that Kafka EOS solves directly.
+The standard framing is: CDC is for **event origins**, EOS is for **pipeline processors**. That framing is not wrong exactly — but it is incomplete.
+
+The real question is: *what is the atomicity unit you need?*
+
+For `account-service` (event origin): you need the DB write and the event entering Kafka to be atomic. CDC provides exactly that.
+
+For `ledger-service` (pipeline processor): you also need the DB write and the event entering Kafka to be atomic. CDC provides exactly that too — with an outbox row standing in for the direct Kafka publish.
+
+The distinction between "origin" and "processor" matters for understanding the shape of the problem. But it does not change which tool solves it. Both shapes reduce to the same atomicity requirement: *write to DB and write the outbox row in one transaction; let the reliable relay (Debezium) handle the rest.*
+
+EOS solves a *different* atomicity unit: offset advance + Kafka produce. That unit is useful — but it requires giving up DLT compatibility, and it does not eliminate the need for idempotency anyway. Outbox + CDC + idempotency solves the same failure modes with fewer constraints.
 
 ---
 
@@ -282,15 +287,13 @@ In BankForge, `ledger-service` is the right place. It sits in the middle of the 
 
 **Saga:** Coordinates a multi-step business operation across services — defines the steps, triggers, and compensations.
 
-**Outbox + CDC:** Guarantees an event reliably enters a message broker at the point of origin — eliminates the dual-write gap between a DB commit and a Kafka publish.
+**Outbox + CDC:** Guarantees an event reliably enters a message broker — eliminates the dual-write gap between a DB commit and a Kafka publish. Applies at both event origins and intermediate pipeline steps.
 
-**Kafka EOS + DB transaction:** Guarantees a consume → process → produce pipeline step is atomic — offset advance and produced message commit together, idempotent DB writes handle the retry window.
+**Kafka EOS:** Guarantees consume → produce is atomic from Kafka's perspective. Conceptually clean, but conflicts with Dead Letter Topics and does not eliminate the need for idempotency. We dropped it in favour of Outbox + CDC + idempotency.
 
 ---
 
 ## How They Layer Together
-
-They are not alternatives. In BankForge they are three layers of the same system:
 
 ```mermaid
 flowchart TD
@@ -298,25 +301,32 @@ flowchart TD
         S["Choreography: defines steps,\ntriggers, and compensations\nacross all 4 services"]
     end
 
-    subgraph L2["Layer 2 — Outbox + CDC (event origin)"]
-        O["account-service:\nDB write + outbox_event\nin one ACID transaction\n→ Debezium publishes to Kafka"]
+    subgraph L2["Layer 2 — Outbox + CDC (both services)"]
+        O1["account-service:\nDB write + outbox_event\nin one ACID transaction\n→ Debezium publishes banking.transfer.events"]
+        O2["ledger-service:\nDB write + ledger_outbox_event\nin one ACID transaction\n→ Debezium publishes banking.transfer.confirmed"]
     end
 
-    subgraph L3["Layer 3 — Kafka EOS + idempotency (pipeline step)"]
-        E["ledger-service:\nKafka TX wraps offset advance + produce\nDB TX wraps DEBIT + CREDIT saves\nIdempotency guard makes retry safe"]
+    subgraph L3["Layer 3 — Idempotency (retry safety)"]
+        I["Both consumers:\nexistsByTransferId guard\n+ UNIQUE constraint on DB\nmakes at-least-once delivery safe"]
+    end
+
+    subgraph L4["Layer 4 — DLT (failure capture)"]
+        D["DeadLetterPublishingRecoverer\nroutes exhausted retries to .DLT topic\nPreserved in Kafka, logged via DltHandler\nNever silently dropped"]
     end
 
     L1 --> L2
     L2 --> L3
+    L3 --> L4
 
     style L1 fill:#e8f5e9,stroke:#81c784
     style L2 fill:#e3f2fd,stroke:#64b5f6
     style L3 fill:#fff8e1,stroke:#ffb300
+    style L4 fill:#fce4ec,stroke:#e57373
 ```
 
-Remove the Saga and you have no coordination — services do isolated work with no defined flow. Remove the Outbox and the saga can get stuck because its triggering event was silently dropped. Remove Kafka EOS and the saga can get stuck because a downstream step crashed between its DB commit and its Kafka publish.
+Remove the Saga and you have no coordination — services do isolated work with no defined flow. Remove the Outbox and a service can crash between its DB commit and the event entering Kafka, leaving the saga stuck. Remove idempotency and at-least-once redelivery produces duplicate ledger entries. Remove the DLT and poison pill messages are silently dropped, leaving the transfer state unknown.
 
-Each pattern operates at a different scope: the Saga at the system level, the Outbox at the event origin, Kafka EOS at the pipeline step. You need all three to build a system that is consistent under realistic failure conditions — not just when everything goes right.
+Each layer is necessary. EOS was a candidate for one layer that turned out to create more problems than it solved — specifically because it is incompatible with the DLT layer that sits below it.
 
 ---
 
