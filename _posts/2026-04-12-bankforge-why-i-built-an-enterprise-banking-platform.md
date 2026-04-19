@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "BankForge: Why I Built an Enterprise Banking Platform as a Side Project"
+title: "BankForge: Building a Banking Platform to Understand Distributed Systems"
 date: 2026-04-12
 categories: [engineering]
 tags: [java, spring-boot, microservices, kafka, kubernetes, istio, bankforge]
