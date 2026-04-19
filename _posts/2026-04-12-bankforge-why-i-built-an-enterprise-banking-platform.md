@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "BankForge: Building a Banking Platform to Understand Distributed Systems"
+title: "BankForge: A Hands-On Deep Dive into Distributed Systems Patterns"
 date: 2026-04-12
 categories: [engineering]
 tags: [java, spring-boot, microservices, kafka, kubernetes, istio, bankforge]
