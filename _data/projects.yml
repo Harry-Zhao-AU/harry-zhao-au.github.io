@@ -4,6 +4,12 @@
   github: "https://github.com/Harry-Zhao-AU/BankForge"
   live: ""
 
+- name: "PulsePost"
+  description: "AI-powered article pipeline that monitors trending AI topics, generates articles in your voice, seeks approval via Telegram bot, and auto-publishes to your blog. Infrastructure as Code on Azure — Functions, Service Bus, and Application Insights provisioned via Terraform and Bicep, deployed through GitHub Actions CI/CD."
+  technologies: ["C#", "Azure Functions", "Service Bus", "Application Insights", "Terraform", "Bicep", "GitHub Actions", "CI/CD", "Python", "Telegram Bot"]
+  github: "https://github.com/Harry-Zhao-AU/PulsePost"
+  live: ""
+
 - name: "NanoBotTS"
   description: "Lightweight AI Agent Framework — full agent loop with LLM reasoning, tool use, and parallel execution. Features a decoupled MessageBus (CLI/Telegram), two-tier memory system, token-aware context management, and ProviderRegistry supporting Azure OpenAI, OpenAI, Groq, and Ollama."
   technologies: ["TypeScript", "Node.js"]

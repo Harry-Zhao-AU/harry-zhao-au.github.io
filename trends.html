@@ -1,0 +1,21 @@
+---
+layout: default
+title: Trends
+permalink: /trends/
+---
+
+<article class="page">
+  <h1>Current Trends</h1>
+  <p>AI and tech trends — curated and published via <a href="https://github.com/Harry-Zhao-AU/PulsePost" target="_blank" rel="noopener">PulsePost</a>.</p>
+
+  {% assign trend_posts = site.posts | where: "channel", "trends" %}
+  {% if trend_posts.size > 0 %}
+    <ul class="post-list">
+      {% for post in trend_posts %}
+        <li><a href="{{ post.url | relative_url }}">{{ post.title }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No trend posts yet — check back soon!</p>
+  {% endif %}
+</article>

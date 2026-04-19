@@ -3,6 +3,7 @@ layout: post
 title: "Codex for (almost) everything"
 date: 2026-04-19
 categories: [AI, Engineering]
+channel: trends
 ---
 # Codex for (Almost) Everything
 
