@@ -50,9 +50,10 @@ layout: default
 
 <div class="section">
   <h2>Latest Posts</h2>
-  {% if site.posts.size > 0 %}
+  {% assign project_posts = site.posts | where_exp: "post", "post.channel != 'trends'" %}
+  {% if project_posts.size > 0 %}
     <ul class="post-list">
-      {% for post in site.posts %}
+      {% for post in project_posts %}
         <li><a href="{{ post.url | relative_url }}">{{ post.title }}</a></li>
       {% endfor %}
     </ul>
