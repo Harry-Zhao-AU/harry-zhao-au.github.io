@@ -15,15 +15,31 @@ Here's how it works.
 
 Five Azure Functions wired together through Service Bus queues:
 
-```
-Scheduler → fetch-topics queue
-              → FetchTopics fn
-                  → generate-article queue
-                      → GenerateArticle fn
-                          → Telegram notification (APPROVE / REJECT / EDIT)
-                              → post-article queue
-                                  → PostArticle fn
-                                      → GitHub API (PR created)
+```mermaid
+flowchart TD
+    T1([Timer\nSunday 22:00 UTC]) --> SBQ1
+    T2([Telegram\n/generate]) --> WH[TelegramWebhook]
+    WH --> SBQ1
+
+    SBQ1[(Service Bus\nfetch-topics)] --> FT[FetchTopics]
+    FT -->|HN + Blogs + YouTube + arXiv| SBQ2
+
+    SBQ2[(Service Bus\ngenerate-article)] --> GA[GenerateArticle]
+    GA -->|3x GPT-4o calls| OAI[Azure OpenAI]
+    OAI --> GA
+    GA -->|pending draft| TS[(Table Storage\nArticleDrafts)]
+    GA -->|preview| BOT([Telegram Bot])
+
+    BOT --> H([Harry])
+    H -->|APPROVE / REJECT / EDIT| WH2[TelegramWebhook]
+    WH2 -->|REJECT| TS
+    WH2 -->|EDIT: rewrite + re-notify| OAI
+    WH2 -->|APPROVE: rowKey| SBQ3
+
+    SBQ3[(Service Bus\npost-article)] --> PA[PostArticle]
+    PA -->|branch + commit + PR| GH[(GitHub)]
+    PA -->|X thread + image prompt| BOT
+    PA -->|approved| TS
 ```
 
 Every Sunday at 10pm UTC, a timer trigger fires and drops a message into the `fetch-topics` queue. Everything after that is reactive — no polling, no cron juggling, just messages flowing through queues.
@@ -93,7 +109,18 @@ The entire Azure environment is provisioned with Terraform and Bicep:
 
 Both Terraform and Bicep provision the same infrastructure — two IaC approaches side by side, useful for comparing syntax and tooling on a real project.
 
-GitHub Actions runs two workflows: one for Terraform (`plan` on PR, `apply` on merge to `main`), one for building and deploying the C# Function App via `azure/functions-action`.
+```mermaid
+flowchart LR
+    SRC[Push to src/** or tests/**\nor pull request to main] --> CI
+
+    subgraph CI["ci.yml — GitHub Actions"]
+        B1[dotnet restore] --> B2[dotnet build\n-c Release] --> B3[dotnet test\n--no-build]
+    end
+
+    CI --> R([Pass / Fail])
+```
+
+GitHub Actions runs a single CI workflow on every push or PR touching `src/` or `tests/`. Deploy and infrastructure provisioning are run manually.
 
 ## What I learned
 
