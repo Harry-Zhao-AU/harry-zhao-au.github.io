@@ -115,7 +115,3 @@ I accepted this tradeoff but mitigated it:
 - Short SAS expiry, rotated via a GitHub Actions secret
 
 For a storybook app this risk profile is acceptable. For anything with more sensitive content, the right fix is a server-side proxy that validates the SWA auth token before issuing short-lived SAS tokens — but that's more infrastructure than this project needed.
-
-## What's next
-
-The image pipeline is solid and reusable for any story. Next I want to look at generating game assets the same way — consistent characters and environments for a 2D game. That's a different challenge because game assets need to tile, animate, and maintain scale consistency across a lot more variations than a storybook does. More on that in a follow-up post.
